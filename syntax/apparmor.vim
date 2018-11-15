@@ -116,7 +116,7 @@ syn match sdError /^.*$/ contains=sdComment "highlight all non-valid lines as er
 " TODO: make a separate pattern for variable definitions, then mark sdGlob as contained
 syn match sdGlob /\v\?|\*|\{.*,.*\}|[[^\]]\+\]|\@\{[a-zA-Z][a-zA-Z0-9_]*\}/
 
-syn match sdAlias /\v^alias\s+(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob
+syn match sdAlias /\v^alias\s+(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob,sdComment
 
 " syn match sdComment /#.*/
 
@@ -142,17 +142,17 @@ syn match  sdCapDanger /\v^\s*(audit\s+)?(deny\s+|allow\s+)?capability\s*,(\s*$|
 " Network line
 " Syntax: network domain (inet, ...) type (stream, ...) protocol (tcp, ...)
 " TODO: 'owner' isn't supported, but will be (JJ, 2011-01-11)
-syn match  sdNetwork         /\v^\s*(audit\s+)?(deny\s+|allow\s+)?network(\s+(unix|inet|ax25|ipx|appletalk|netrom|bridge|atmpvc|x25|inet6|rose|netbeui|security|key|netlink|packet|ash|econet|atmsvc|rds|sna|irda|pppox|wanpipe|llc|can|tipc|bluetooth|iucv|rxrpc|isdn|phonet|ieee802154|caif|alg|nfc|vsock))?(\s+(stream|dgram|seqpacket|rdm|packet))?(\s+tcp|\s+udp|\s+icmp)?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+syn match  sdNetwork         /\v^\s*(audit\s+)?(deny\s+|allow\s+)?network(\s+(unspec|unix|inet|ax25|ipx|appletalk|netrom|bridge|atmpvc|x25|inet6|rose|netbeui|security|key|netlink|packet|ash|econet|atmsvc|rds|sna|irda|pppox|wanpipe|llc|ib|mpls|can|tipc|bluetooth|iucv|rxrpc|isdn|phonet|ieee802154|caif|alg|nfc|vsock|kcm|qipcrtr|smc))?(\s+(stream|dgram|seqpacket|rdm|packet))?(\s+tcp|\s+udp|\s+icmp)?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " network rules containing 'raw'
-syn match  sdNetworkDanger         /\v^\s*(audit\s+)?(deny\s+|allow\s+)?network(\s+(unix|inet|ax25|ipx|appletalk|netrom|bridge|atmpvc|x25|inet6|rose|netbeui|security|key|netlink|packet|ash|econet|atmsvc|rds|sna|irda|pppox|wanpipe|llc|can|tipc|bluetooth|iucv|rxrpc|isdn|phonet|ieee802154|caif|alg|nfc|vsock))?(\s+(raw))(\s+tcp|\s+udp|\s+icmp)?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+syn match  sdNetworkDanger         /\v^\s*(audit\s+)?(deny\s+|allow\s+)?network(\s+(unspec|unix|inet|ax25|ipx|appletalk|netrom|bridge|atmpvc|x25|inet6|rose|netbeui|security|key|netlink|packet|ash|econet|atmsvc|rds|sna|irda|pppox|wanpipe|llc|ib|mpls|can|tipc|bluetooth|iucv|rxrpc|isdn|phonet|ieee802154|caif|alg|nfc|vsock|kcm|qipcrtr|smc))?(\s+(raw))(\s+tcp|\s+udp|\s+icmp)?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 " 'all networking' includes raw -> mark as dangerous
 syn match  sdNetworkDanger         /\v^\s*(audit\s+)?(deny\s+|allow\s+)?network\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 
 " Change Profile
-" TODO: audit and deny support will be added (JJ, 2011-01-11)
-syn match   sdEntryChangeProfile    /\v^\s*change_profile\s+-\>\s+\S+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
-
+syn match   sdEntryChangeProfile    /\v^\s*(audit\s+)?(deny\s+|allow\s+)?change_profile\s+(safe\s+[/@]\S+|unsafe\s+[/@]\S+|[/@]\S+)?\s*(-\>\s*\S+)?\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob,sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
+" bare change_profile rule
+syn match   sdEntryChangeProfile    /\v^\s*(audit\s+)?(deny\s+|allow\s+)?change_profile\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment nextgroup=@sdEntry,sdComment,sdError,sdInclude
 
 " rlimit
 " TODO: audit and deny support will be added (JJ, 2011-01-11)
@@ -167,10 +167,10 @@ syn match sdRLimit /\v^\s*set\s+rlimit\s+rttime\s+\<\=\s+[0-9]+(ms|seconds|minut
 syn match sdRLimit /\v^\s*set\s+rlimit\s+(cpu|rttime|nofile|nproc|rtprio|locks|sigpending|fsize|data|stack|core|rss|as|memlock|msgqueue|nice)\s+\<\=\s+infinity\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment
 
 " link rules
-syn match sdEntryW /\v^\s+(audit\s+)?(deny\s+|allow\s+)?(owner\s+|other\s+)?link\s+(subset\s+)?(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob
+syn match sdEntryW /\v^\s+(audit\s+)?(deny\s+|allow\s+)?(owner\s+|other\s+)?link\s+(subset\s+)?(\/|\@\{\S*\})\S*\s+-\>\s+(\/|\@\{\S*\})\S*\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdGlob,sdComment
 
 
-syn match sdExtHat  /\v^\s+(\^|profile\s+)\S+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment " hat without {...}
+syn match sdExtHat  /\v^\s+(\^|hat\s+|profile\s+)\S+\s*,(\s*$|(\s*#.*$)\@=)/ contains=sdComment " hat without {...}
 
 
 
@@ -179,7 +179,7 @@ syn match sdProfileName /\v^((profile\s+)?\/\S+|profile\s+([a-zA-Z0-9]\S*\s)?\S+
 syn match sdProfileStart /{/ contained
 syn match sdProfileEnd /^}\s*(#.*)?$/ contained " TODO: syn region does not (yet?) allow usage of comment in end=
                                                 " TODO: Removing the $ mark from end= will allow non-comments also :-(
-syn match sdHatName /\v^\s+(\^|profile\s+)\S+\s+((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)=\{/ contains=sdProfileStart,sdFlags,sdComment
+syn match sdHatName /\v^\s+(\^|hat\s+|profile\s+)\S+\s+((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)=\{/ contains=sdProfileStart,sdFlags,sdComment
 syn match sdHatStart /{/ contained
 syn match sdHatEnd /}/ contained " TODO: allow comments + [same as for syn match sdProfileEnd]
 syn match sdFlags /\v((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)/ contained contains=sdFlagKey
@@ -193,7 +193,7 @@ syn match sdInclude /\s*include\s<\S*>/  " TODO: doesn't check until $
 " basic profile block...
 " \s+ does not work in end=, therefore using \s\s*
 syn region Normal start=/\v^(profile\s+)?\S+\s+((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)=\{/ matchgroup=sdProfileEnd end=/^}\s*$/ contains=sdProfileName,Hat,@sdEntry,sdComment,sdError,sdInclude
-syn region Hat start=/\v^\s+(\^|profile\s+)\S+\s+((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)=\{/ matchgroup=sdHatEnd end=/^\s\s*}\s*$/ contains=sdHatName,@sdEntry,sdComment,sdError,sdInclude
+syn region Hat start=/\v^\s+(\^|hat\s+|profile\s+)\S+\s+((flags\s*\=\s*)?\(\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted)(\s*,\s*(complain|audit|attach_disconnected|no_attach_disconnected|chroot_attach|chroot_no_attach|chroot_relative|namespace_relative|mediate_deleted|delegate_deleted))*\s*\)\s+)=\{/ matchgroup=sdHatEnd end=/^\s\s*}\s*$/ contains=sdHatName,@sdEntry,sdComment,sdError,sdInclude
 
 " file permissions
 
